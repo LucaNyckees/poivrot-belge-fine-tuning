@@ -3,7 +3,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 class InferenceEngine:
-    def __init__(self, base_model: str, lora_path: str):
+    def __init__(self):
         base_model = "mistralai/Mistral-7B-Instruct-v0"
         lora_path = "./poivrot_belge_lora"
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)

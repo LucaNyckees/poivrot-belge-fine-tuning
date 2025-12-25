@@ -1,12 +1,13 @@
 import typer
 
-from src import scraping, lora
+from src import scraping, lora, inference
 
 app = typer.Typer()
 
 
 app.add_typer(scraping.app)
 app.add_typer(lora.app)
+app.add_typer(inference.app)
 
 if __name__ == "__main__":
     app()
