@@ -10,13 +10,13 @@ class InferenceEngine:
         self.model = AutoModelForCausalLM.from_pretrained(
             base_model,
             device_map="auto",
-            torch_dtype=torch.float16
+            dtype=torch.float16
         )
         self.model = PeftModel.from_pretrained(self.model, lora_path)
         self.model.eval()
         self.input = input
 
-    def generate(self, prompt: str, max_new_tokens: int = 50, temperature: float = 0.3) -> str:
+    def generate(self, prompt: str, max_new_tokens: int = 50) -> str:
         formatted_prompt = f"""
         **Instruction** : Réponds comme un Belge poivrot, de manière courte et naturelle.
         **Exemples** :
@@ -39,18 +39,26 @@ class InferenceEngine:
         output = self.model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            temperature=temperature,
-            top_p=0.7,
             do_sample=False,
             num_return_sequences=1,
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id
         )
 
-        response = self.tokenizer.decode(output[0], skip_special_tokens=True)
-        return response.split("**Réponse** :")[-1].strip().split("\n")[0]
+        full_response = self.tokenizer.decode(output[0], skip_special_tokens=True)
+        reponses_list = full_response.split("**Réponse** :")
+        if len(reponses_list) > 1:
+            print(f"There are {len(reponses_list)} parts in the response split by '**Réponse** :'")
+            print("Returning the first one only.")
+            response_part = reponses_list[1].strip()
+        else:
+            print("No '**Réponse** :' found in the response.")
+            response_part = ""
+
+        return response_part
 
     def execute(self):
         prompt = self.input
         response = self.generate(prompt)
+        print("Voici la réponse générée :")
         print(response)
