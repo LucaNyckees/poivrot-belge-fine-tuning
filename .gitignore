@@ -31,6 +31,8 @@ var/
 .installed.cfg
 *.egg
 .env
+poivrot_belge_lora/*
+scripts/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
