@@ -1,0 +1,14 @@
+line-length = 120
+
+[format]
+# Configure formatting options
+skip-magic-trailing-comma = true
+quote-style = "double"
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E402", "E203"]
+
+# Override specific formatting rules
+[lint.pycodestyle]
+max-line-length = 120
