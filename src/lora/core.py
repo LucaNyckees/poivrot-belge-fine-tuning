@@ -10,12 +10,11 @@ class MistralLoraFineTuner:
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.dataset = load_dataset("json", data_files="scripts/dikkenek_dataset.jsonl")["train"]
+        self.dataset = load_dataset("json", data_files="scripts/dikkenek_qa_dataset.jsonl")["train"]
         self.dataset = self.dataset.remove_columns([col for col in self.dataset.column_names if col not in ["prompt", "completion"]])
-        for ex in self.dataset:
-            print(type(ex["prompt"]), type(ex["completion"]))
-            print(ex["prompt"], ex["completion"], ex)
-            break
+        print(f"Nombre total de paires: {len(self.dataset)}")
+        for i, ex in enumerate(self.dataset.select(range(3))):
+            print(f"Exemple {i+1}: Q={ex['prompt']} | A={ex['completion']}")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm=False)
 
     def execute(self):
@@ -25,18 +24,19 @@ class MistralLoraFineTuner:
         self.save_model()
 
     def tokenize(self, example):
-        # si prompt ou completion est une liste, join avec des espaces
-        prompt = " ".join(example["prompt"]) if isinstance(example["prompt"], list) else example["prompt"]
-        completion = " ".join(example["completion"]) if isinstance(example["completion"], list) else example["completion"]
-
+        formatted_text = f"<s>[INST] {example['prompt']} [/INST] {example['completion']}</s>"
         tokens = self.tokenizer(
-            prompt + completion,
+            formatted_text,
             truncation=True,
-            padding='max_length',
+            padding="max_length",
             max_length=1024,
             return_tensors="pt"
         )
-        return {"input_ids": tokens["input_ids"][0], "attention_mask": tokens["attention_mask"][0], "labels": tokens["input_ids"][0]}
+        return {
+            "input_ids": tokens["input_ids"][0],
+            "attention_mask": tokens["attention_mask"][0],
+            "labels": tokens["input_ids"][0]
+        }
 
     def prepare_data(self):
         self.tokenized_dataset = self.dataset.map(
@@ -67,14 +67,14 @@ class MistralLoraFineTuner:
 
         training_args = TrainingArguments(
             output_dir="./poivrot_belge_lora",
-            per_device_train_batch_size=1,
-            gradient_accumulation_steps=16,
+            per_device_train_batch_size=2,
+            gradient_accumulation_steps=8,
             warmup_steps=50,
             num_train_epochs=3,
-            max_steps=500,
-            learning_rate=3e-4,
+            max_steps=1000,
+            learning_rate=2e-4,
             fp16=True,
-            logging_steps=10,
+            logging_steps=20,
             save_strategy="epoch",
             save_total_limit=2,
             report_to="none",
