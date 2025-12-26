@@ -17,7 +17,6 @@ A **fine-tuning** project for the **Mistral-7B** model to generate dialogues in 
 - [🔧 Model Parameters](#-model-parameters)
 - [💡 Example Responses](#-example-responses)
 - [📊 Results and Evaluation](#-results-and-evaluation)
-- [🙏 Acknowledgements](#-acknowledgements)
 
 ---
 
@@ -65,7 +64,7 @@ When you are finished, you can stop the environment by running:
 deactivate
 ```
 
-### Basic structure
+## Project Structure
 ```
 ├── LICENSE
 |
@@ -95,4 +94,21 @@ deactivate
              └── core.py
 |
 └── tests/
+```
+
+## 🤖 Usage
+```
+cd poivrot-belge-fine-tuning/
+```
+### 1. Scrape Dialogues
+```
+python -m src scraping execute
+```
+### 2. Fine-Tune the Model
+```
+python -m src lora execute
+```
+### 3. Inference (Generate Responses)
+```
+python -m src inference execute --input="Eh tu bois quoi fieu ?"
 ```
