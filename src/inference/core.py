@@ -25,45 +25,24 @@ class InferenceEngine:
         self.input = input
 
     def generate(self, prompt: str, max_new_tokens: int = 50) -> str:
-        formatted_prompt = f"""
-        **Instruction** : Réponds comme un Belge poivrot, de manière courte et naturelle.
-        **Exemples** :
-        - Q: Eh tu bois quoi fieu?
-        - R: Une bonne Stella, bien fraîche !
-        - Q: T'as vu le match hier ?
-        - R: Ouais, c'était du lourd, mais les Diables Rouges ont encore merdé !
-
-        **Question** : {prompt}
-        **Réponse** :
-        """
-
+        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
         inputs = self.tokenizer(
             formatted_prompt,
             return_tensors="pt",
             truncation=True,
             max_length=512
         ).to("cuda")
-
         output = self.model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
-            do_sample=False,
-            num_return_sequences=1,
+            temperature=0.7,
+            top_p=0.9,
+            do_sample=True,
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id
         )
-
-        full_response = self.tokenizer.decode(output[0], skip_special_tokens=True)
-        reponses_list = full_response.split("**Réponse** :")
-        if len(reponses_list) > 1:
-            self.logger.info(f"There are {len(reponses_list)} parts in the response split by '**Réponse** :'")
-            self.logger.info("Returning the first one only.")
-            response_part = reponses_list[1].strip()
-        else:
-            self.logger.info("No '**Réponse** :' found in the response.")
-            response_part = ""
-
-        return response_part
+        response = self.tokenizer.decode(output[0], skip_special_tokens=True)
+        return response.split("[/INST]")[-1].strip()
 
     def execute(self):
         prompt = self.input
