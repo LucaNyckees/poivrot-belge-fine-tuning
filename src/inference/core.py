@@ -1,12 +1,14 @@
 from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
+from logging import Logger
 
 from src.helpers import select_first_in_multi_reponses_output
 
 
 class InferenceEngine:
-    def __init__(self, input: str = "", tuned: bool = True):
+    def __init__(self, logger: Logger, input: str = "", tuned: bool = True):
+        self.logger = logger
         base_model = "mistralai/Mistral-7B-v0.1"
         lora_path = "./poivrot_belge_lora"
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)
@@ -54,11 +56,11 @@ class InferenceEngine:
         full_response = self.tokenizer.decode(output[0], skip_special_tokens=True)
         reponses_list = full_response.split("**Réponse** :")
         if len(reponses_list) > 1:
-            print(f"There are {len(reponses_list)} parts in the response split by '**Réponse** :'")
-            print("Returning the first one only.")
+            self.logger.info(f"There are {len(reponses_list)} parts in the response split by '**Réponse** :'")
+            self.logger.info("Returning the first one only.")
             response_part = reponses_list[1].strip()
         else:
-            print("No '**Réponse** :' found in the response.")
+            self.logger.info("No '**Réponse** :' found in the response.")
             response_part = ""
 
         return response_part
@@ -66,8 +68,8 @@ class InferenceEngine:
     def execute(self):
         prompt = self.input
         response = self.generate(prompt)
-        print("Voici la réponse générée :")
-        print(response)
+        self.logger.info("Voici la réponse générée :")
+        self.logger.info(response)
         processed_response = select_first_in_multi_reponses_output(response)
-        print("Voici la réponse après traitement : ----------------")
-        print(processed_response)
+        self.logger.info("Voici la réponse après traitement : ----------------")
+        self.logger.info(processed_response)

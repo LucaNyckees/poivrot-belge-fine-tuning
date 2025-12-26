@@ -1,6 +1,7 @@
 import typer
 
 from src.visualization.core import Visualizer
+from src.utils.log_handler import setup_log
 
 step = "visualization"
 app = typer.Typer(name=step)
@@ -10,7 +11,6 @@ app = typer.Typer(name=step)
 def make_visualization_cmd(
     test: bool = typer.Option(default=False, help="Run in test mode"),
 ) -> None:
-
-    print(test)
-    visualizer = Visualizer()
+    logger = setup_log("visualization")
+    visualizer = Visualizer(logger=logger)
     visualizer.execute()

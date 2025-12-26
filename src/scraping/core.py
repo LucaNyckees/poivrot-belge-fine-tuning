@@ -2,11 +2,13 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import os
+from logging import Logger
 
 
 class DikkenekScraper:
-    def __init__(self):
+    def __init__(self, logger: Logger):
         self.url = "https://dikkenek.ovh/?script=."
+        self.logger = logger
 
     def execute(self):
 
@@ -53,4 +55,4 @@ class DikkenekScraper:
             for pair in pairs:
                 f.write(json.dumps(pair, ensure_ascii=False) + "\n")
 
-        print(f"{len(pairs)} question/answer pairs saved to {output_file}")
+        self.logger.info(f"{len(pairs)} question/answer pairs saved to {output_file}")

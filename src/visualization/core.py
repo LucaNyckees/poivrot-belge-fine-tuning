@@ -1,13 +1,15 @@
 import json
 import plotly.graph_objects as go
 import os
+from logging import Logger
 
 from src.utils.paths import RESULTS_PATH
 
 
 class Visualizer:
 
-    def __init__(self):
+    def __init__(self, logger: Logger) -> None:
+        self.logger = logger
         self.logs_file_path = RESULTS_PATH / "training_monitoring" / "lora.json"
         self.logs_plots_path = RESULTS_PATH / "training_monitoring" / "plots"
         os.makedirs(self.logs_plots_path, exist_ok=True)
@@ -70,7 +72,4 @@ class Visualizer:
         )
         fig_lr.write_image(self.logs_plots_path / "learning_rate_vs_epoch.png")
 
-        print("Saved:")
-        print("- loss_vs_epoch.html")
-        print("- grad_norm_vs_epoch.html")
-        print("- learning_rate_vs_epoch.html")
+        self.logger.info(f"Plots saved to {self.logs_plots_path}")

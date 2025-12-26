@@ -2,19 +2,20 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingA
 from datasets import load_dataset
 from peft import LoraConfig, get_peft_model, TaskType
 import torch
-
+from logging import Logger
 
 class MistralLoraFineTuner:
-    def __init__(self):
+    def __init__(self, logger: Logger):
+        self.logger = logger
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
         self.dataset = load_dataset("json", data_files="scripts/dikkenek_qa_dataset.jsonl")["train"]
         self.dataset = self.dataset.remove_columns([col for col in self.dataset.column_names if col not in ["prompt", "completion"]])
-        print(f"Nombre total de paires: {len(self.dataset)}")
+        self.logger.info(f"Nombre total de paires: {len(self.dataset)}")
         for i, ex in enumerate(self.dataset.select(range(3))):
-            print(f"Exemple {i+1}: Q={ex['prompt']} | A={ex['completion']}")
+            self.logger.info(f"Exemple {i+1}: Q={ex['prompt']} | A={ex['completion']}")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm=False)
 
     def execute(self):
