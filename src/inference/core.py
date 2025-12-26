@@ -47,8 +47,4 @@ class InferenceEngine:
     def execute(self):
         prompt = self.input
         response = self.generate(prompt)
-        self.logger.info("Voici la réponse générée :")
-        self.logger.info(response)
-        processed_response = select_first_in_multi_reponses_output(response)
-        self.logger.info("Voici la réponse après traitement : ----------------")
-        self.logger.info(processed_response)
+        self.logger.info(f"Poivrot: {response}")
