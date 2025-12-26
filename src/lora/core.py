@@ -4,14 +4,16 @@ from peft import LoraConfig, get_peft_model, TaskType
 import torch
 from logging import Logger
 
+
 class MistralLoraFineTuner:
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, character_name: str):
         self.logger = logger
+        self.character_name = character_name
         self.model_name = "mistralai/Mistral-7B-v0.1"
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         if self.tokenizer.pad_token is None:
             self.tokenizer.pad_token = self.tokenizer.eos_token
-        self.dataset = load_dataset("json", data_files="scripts/dikkenek_qa_dataset.jsonl")["train"]
+        self.dataset = load_dataset("json", data_files=f"scripts/dikkenek_{self.character_name}.jsonl")["train"]
         self.dataset = self.dataset.remove_columns([col for col in self.dataset.column_names if col not in ["prompt", "completion"]])
         self.logger.info(f"Nombre total de paires: {len(self.dataset)}")
         for i, ex in enumerate(self.dataset.select(range(3))):
@@ -67,7 +69,7 @@ class MistralLoraFineTuner:
         self.model.print_trainable_parameters()
 
         training_args = TrainingArguments(
-            output_dir="./poivrot_belge_lora",
+            output_dir=f"./model_dikkenek_{self.character_name}",
             per_device_train_batch_size=2,
             gradient_accumulation_steps=8,
             warmup_steps=50,
@@ -93,4 +95,4 @@ class MistralLoraFineTuner:
         trainer.train()
 
     def save_model(self):
-        self.model.save_pretrained("./poivrot_belge_lora")
+        self.model.save_pretrained(f"./model_dikkenek_{self.character_name}")
