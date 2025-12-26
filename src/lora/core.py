@@ -4,6 +4,8 @@ from peft import LoraConfig, get_peft_model, TaskType
 import torch
 from logging import Logger
 
+from src.utils.paths import MODELS_PATH
+
 
 class MistralLoraFineTuner:
     def __init__(self, logger: Logger, character_name: str):
@@ -69,12 +71,12 @@ class MistralLoraFineTuner:
         self.model.print_trainable_parameters()
 
         training_args = TrainingArguments(
-            output_dir=f"./model_dikkenek_{self.character_name}",
+            output_dir=MODELS_PATH / f"dikkenek_{self.character_name}",
             per_device_train_batch_size=2,
             gradient_accumulation_steps=8,
             warmup_steps=50,
             num_train_epochs=3,
-            max_steps=1000,
+            max_steps=200,
             learning_rate=2e-4,
             fp16=True,
             logging_steps=20,
@@ -95,4 +97,4 @@ class MistralLoraFineTuner:
         trainer.train()
 
     def save_model(self):
-        self.model.save_pretrained(f"./model_dikkenek_{self.character_name}")
+        self.model.save_pretrained(MODELS_PATH / f"dikkenek_{self.character_name}")
