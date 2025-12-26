@@ -3,8 +3,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from logging import Logger
 
-from src.helpers import select_first_in_multi_reponses_output
-
 
 class InferenceEngine:
     def __init__(self, logger: Logger, input: str = "", tuned: bool = True):
