@@ -112,3 +112,7 @@ python -m src lora execute
 ```
 python -m src inference execute --input="Eh tu bois quoi fieu ?"
 ```
+
+
+## 🔧 Model Parameters
+The base model is Hugging Face's `mistralai/Mistral-7B-v0.1` (information here: https://mistral.ai/news/announcing-mistral-7b).
