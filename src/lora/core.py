@@ -18,8 +18,8 @@ class MistralLoraFineTuner:
         self.dataset = load_dataset("json", data_files=f"scripts/dikkenek_{self.character_name}.jsonl")["train"]
         self.dataset = self.dataset.remove_columns([col for col in self.dataset.column_names if col not in ["prompt", "completion"]])
         self.logger.info(f"Nombre total de paires: {len(self.dataset)}")
-        for i, ex in enumerate(self.dataset.select(range(3))):
-            self.logger.info(f"Exemple {i+1}: Q={ex['prompt']} | A={ex['completion']}")
+        # for i, ex in enumerate(self.dataset.select(range(3))):
+        #     self.logger.info(f"Exemple {i+1}: Q={ex['prompt']} | A={ex['completion']}")
         self.data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm=False)
 
     def execute(self):

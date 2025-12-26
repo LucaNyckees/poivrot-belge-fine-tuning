@@ -109,3 +109,6 @@ figures/*
 
 # Mypy cache
 .mypy_cache/
+
+# lora models
+lora_models/*

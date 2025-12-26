@@ -2,13 +2,17 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from logging import Logger
+import re
+
+from src.utils.paths import MODELS_PATH
 
 
 class InferenceEngine:
-    def __init__(self, logger: Logger, input: str = "", tuned: bool = True):
+    def __init__(self, logger: Logger, character: str, input: str = "", tuned: bool = True):
         self.logger = logger
+        self.character = character
         base_model = "mistralai/Mistral-7B-v0.1"
-        lora_path = "./poivrot_belge_lora"
+        lora_path = MODELS_PATH / f"dikkenek_{self.character}"
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)
         self.model = AutoModelForCausalLM.from_pretrained(
             base_model,
@@ -23,7 +27,12 @@ class InferenceEngine:
         self.input = input
 
     def generate(self, prompt: str, max_new_tokens: int = 50) -> str:
-        formatted_prompt = f"<s>[INST] {prompt} [/INST]"
+        # formatted_prompt = f"<s>[INST] {prompt} [/INST]"
+        formatted_prompt = f"""<s>[INST] <<SYS>>
+            Tu es {self.character}. Réponds en **une phrase courte et drôle**, comme dans le film Dikkenek.
+            <</SYS>>
+            Question: {prompt}
+            Réponse: [/INST]"""
         inputs = self.tokenizer(
             formatted_prompt,
             return_tensors="pt",
@@ -33,6 +42,8 @@ class InferenceEngine:
         output = self.model.generate(
             **inputs,
             max_new_tokens=max_new_tokens,
+            no_repeat_ngram_size=2,
+            repetition_penalty=1.2,
             temperature=0.7,
             top_p=0.9,
             do_sample=True,
@@ -40,9 +51,12 @@ class InferenceEngine:
             eos_token_id=self.tokenizer.eos_token_id
         )
         response = self.tokenizer.decode(output[0], skip_special_tokens=True)
-        return response.split("[/INST]")[-1].strip()
+        response = response.split("Réponse:")[-1].strip()
+        match = re.search(r'^.*[.!?]', response)
+        response = match.group(0) if match else ""
+        return response
 
     def execute(self):
         prompt = self.input
         response = self.generate(prompt)
-        self.logger.info(f"Poivrot: {response}")
+        self.logger.info(response)
