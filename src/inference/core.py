@@ -2,8 +2,11 @@ from peft import PeftModel
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 
+from src.helpers import select_first_in_multi_reponses_output
+
+
 class InferenceEngine:
-    def __init__(self, input: str = ""):
+    def __init__(self, input: str = "", tuned: bool = True):
         base_model = "mistralai/Mistral-7B-v0.1"
         lora_path = "./poivrot_belge_lora"
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)
@@ -12,7 +15,10 @@ class InferenceEngine:
             device_map="auto",
             dtype=torch.float16
         )
-        self.model = PeftModel.from_pretrained(self.model, lora_path)
+        if tuned:
+            self.model = PeftModel.from_pretrained(self.model, lora_path)
+        else:
+            pass
         self.model.eval()
         self.input = input
 
@@ -62,3 +68,6 @@ class InferenceEngine:
         response = self.generate(prompt)
         print("Voici la réponse générée :")
         print(response)
+        processed_response = select_first_in_multi_reponses_output(response)
+        print("Voici la réponse après traitement : ----------------")
+        print(processed_response)
